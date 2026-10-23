@@ -2523,75 +2523,128 @@ document.addEventListener("click", e => {
    SUPERVISOR AND MANAGER AUTHENTICATION
 ========================================= */
 
+
+/* =========================================
+   INDEPENDENT ACCOUNT REGISTRATION
+   AND SIGN-IN
+========================================= */
+
 let accounts = readStorage(AUTH_KEY, {});
 
-function authInput(name, label, type = "text") {
+let authMode = "login";
+
+function authInput(name, label, type = "text", autocomplete = "off") {
   return `
     <label class="field">
       ${escapeHTML(label)}
       <input
         name="${name}"
         type="${type}"
+        autocomplete="${autocomplete}"
         required
-        autocomplete="${type === "password" ? "off" : "name"}"
       >
     </label>
   `;
 }
 
+/* =========================================
+   DISPLAY AUTHENTICATION FORM
+========================================= */
+
 function renderAuth() {
-  const needsSupervisor = !accounts.supervisor;
-  const needsManager =
-    !!accounts.supervisor && !accounts.manager;
-
-  const mode = needsSupervisor
-    ? "supervisorSetup"
-    : needsManager
-      ? "managerSetup"
-      : "login";
-
-  $("authForm").dataset.mode = mode;
   $("authError").textContent = "";
 
-  $("authTitle").textContent =
-    mode === "supervisorSetup"
-      ? "Set Up Supervisor Account"
-      : mode === "managerSetup"
-        ? "Set Up Manager Account"
-        : "Sign In";
+  const isRegister = authMode === "register";
+
+  $("authTitle").textContent = isRegister
+    ? "Create Account"
+    : "Welcome Back";
 
   $("authDescription").textContent =
-    mode === "login"
-      ? "BYU-Pathway Training Development and Evaluation Supervisor Hub"
-      : "Create an account for this device.";
+    "BYU-Pathway Training Development and Evaluation Supervisor Hub";
 
-  if (mode === "login") {
-    $("authFields").innerHTML = `
-      <label class="field">
-        Account
-        <select name="role" required>
-          <option value="supervisor">Supervisor</option>
-          <option value="manager">Manager</option>
-        </select>
-      </label>
+  $("authFields").innerHTML = `
+    <div style="display:flex;gap:10px;margin-bottom:20px">
 
-      ${authInput("password", "Password", "password")}
-    `;
-  } else {
-    $("authFields").innerHTML = `
-      ${authInput("username", "Display Name")}
-      ${authInput("password", "Create Password", "password")}
-      ${authInput("confirm", "Confirm Password", "password")}
-    `;
-  }
+      <button
+        type="button"
+        class="btn ${!isRegister ? "primary" : ""}"
+        id="showLogin"
+        style="flex:1">
+        Sign In
+      </button>
 
-  $("authSubmit").textContent =
-    mode === "login" ? "Sign In" : "Save and Continue";
+      <button
+        type="button"
+        class="btn ${isRegister ? "primary" : ""}"
+        id="showRegister"
+        style="flex:1">
+        Create Account
+      </button>
+
+    </div>
+
+    <label class="field">
+      Account Role
+
+      <select name="role" required>
+        <option value="supervisor">Supervisor</option>
+        <option value="manager">Manager</option>
+      </select>
+    </label>
+
+    ${
+      isRegister
+        ? authInput(
+            "username",
+            "Full Name",
+            "text",
+            "name"
+          )
+        : ""
+    }
+
+    ${authInput(
+      "password",
+      isRegister ? "Create Password" : "Password",
+      "password",
+      isRegister ? "new-password" : "current-password"
+    )}
+
+    ${
+      isRegister
+        ? authInput(
+            "confirm",
+            "Confirm Password",
+            "password",
+            "new-password"
+          )
+        : ""
+    }
+  `;
+
+  $("authSubmit").textContent = isRegister
+    ? "Create Account"
+    : "Sign In";
+
+  $("showLogin").onclick = () => {
+    authMode = "login";
+    renderAuth();
+  };
+
+  $("showRegister").onclick = () => {
+    authMode = "register";
+    renderAuth();
+  };
 }
+
+/* =========================================
+   PASSWORD HASHING
+========================================= */
 
 function bytesToHex(bytes) {
   return Array.from(bytes)
-    .map(b => b.toString(16).padStart(2, "0"))
+    .map(byte => byte.toString(16).padStart(2, "0"))
     .join("");
 }
 
@@ -2599,7 +2652,7 @@ async function hashPassword(password, saltHex) {
   if (!globalThis.crypto?.subtle) {
     throw new Error(
       "Secure browser cryptography is unavailable. " +
-      "Try opening the site using localhost in Chrome or Edge."
+      "Open the website through localhost in Chrome or Edge."
     );
   }
 
@@ -2612,13 +2665,15 @@ async function hashPassword(password, saltHex) {
   );
 
   const salt = Uint8Array.from(
-    saltHex.match(/../g).map(h => parseInt(h, 16))
+    saltHex.match(/../g).map(
+      value => parseInt(value, 16)
+    )
   );
 
-  const bits = await crypto.subtle.deriveBits(
+  const result = await crypto.subtle.deriveBits(
     {
       name: "PBKDF2",
-      salt,
+      salt: salt,
       iterations: 160000,
       hash: "SHA-256"
     },
@@ -2626,84 +2681,109 @@ async function hashPassword(password, saltHex) {
     256
   );
 
-  return bytesToHex(new Uint8Array(bits));
+  return bytesToHex(new Uint8Array(result));
 }
+
+/* =========================================
+   UNLOCK DASHBOARD
+========================================= */
 
 function unlock(role) {
   sessionStorage.setItem(SESSION_KEY, role);
 
   $("authScreen").style.display = "none";
+
   $("appShell").classList.remove("locked");
 
   const profile = DEFAULT_PROFILES[role];
 
+  const displayName =
+    accounts[role]?.username || profile.name;
+
   $("userLabel").textContent =
-    (accounts[role]?.username || profile.name) +
-    " · " +
+    displayName + " · " +
     (role === "manager" ? "Manager" : "Supervisor");
 
   setPage("overview");
 }
 
-$("authForm").onsubmit = async e => {
-  e.preventDefault();
+/* =========================================
+   HANDLE SIGN-IN AND REGISTRATION
+========================================= */
 
-  const form = new FormData(e.currentTarget);
-  const mode = $("authForm").dataset.mode;
-  const password = String(form.get("password") || "");
+$("authForm").onsubmit = async function(event) {
+  event.preventDefault();
+
+  const form = new FormData(event.currentTarget);
+
+  const role = String(form.get("role") || "");
+
+  const password = String(
+    form.get("password") || ""
+  );
+
+  $("authError").textContent = "";
 
   $("authSubmit").disabled = true;
 
   try {
-    if (mode === "login") {
-      const role = String(form.get("role"));
-      const account = accounts[role];
 
-      if (!account) {
-        throw new Error("Account has not been configured.");
+    if (!["supervisor", "manager"].includes(role)) {
+      throw new Error("Invalid account role.");
+    }
+
+    /* CREATE ACCOUNT */
+
+    if (authMode === "register") {
+
+      if (accounts[role]) {
+        throw new Error(
+          "A " + role +
+          " account already exists. Please sign in."
+        );
       }
 
-      const hashed = await hashPassword(
-        password,
-        account.salt
+      const username = String(
+        form.get("username") || ""
+      ).trim();
+
+      const confirmPassword = String(
+        form.get("confirm") || ""
       );
 
-      if (hashed !== account.hash) {
-        throw new Error("Incorrect password.");
+      if (!username) {
+        throw new Error(
+          "Please enter your full name."
+        );
       }
 
-      unlock(role);
-    } else {
       if (password.length < 10) {
         throw new Error(
           "Password must contain at least 10 characters."
         );
       }
 
-      if (password !== form.get("confirm")) {
-        throw new Error("Passwords do not match.");
-      }
-
-      const role = mode === "supervisorSetup"
-        ? "supervisor"
-        : "manager";
-
-      const username = String(
-        form.get("username") || ""
-      ).trim();
-
-      if (!username) {
-        throw new Error("Enter your display name.");
+      if (password !== confirmPassword) {
+        throw new Error(
+          "Passwords do not match."
+        );
       }
 
       const salt = bytesToHex(
-        crypto.getRandomValues(new Uint8Array(16))
+        crypto.getRandomValues(
+          new Uint8Array(16)
+        )
+      );
+
+      const hash = await hashPassword(
+        password,
+        salt
       );
 
       accounts[role] = {
-        username,
-        salt,
-        hash: await hashPassword(password, salt)
+        username: username,
+        salt: salt,
+        hash: hash
       };
 
       localStorage.setItem(
@@ -2711,23 +2791,66 @@ $("authForm").onsubmit = async e => {
         JSON.stringify(accounts)
       );
 
-      renderAuth();
+      /* SIGN IN IMMEDIATELY */
+
+      unlock(role);
+
+    } else {
+
+      /* SIGN IN */
+
+      const account = accounts[role];
+
+      if (!account) {
+        throw new Error(
+          "No " + role +
+          " account exists. Select Create Account."
+        );
+      }
+
+      const enteredHash = await hashPassword(
+        password,
+        account.salt
+      );
+
+      if (enteredHash !== account.hash) {
+        throw new Error(
+          "Incorrect password. Please try again."
+        );
+      }
+
+      unlock(role);
     }
+
   } catch (error) {
-    $("authError").textContent = error.message;
+
+    $("authError").textContent =
+      error.message;
+
   } finally {
+
     $("authSubmit").disabled = false;
+
   }
 };
 
-$("logout").onclick = () => {
+/* =========================================
+   SIGN OUT
+========================================= */
+
+$("logout").onclick = function() {
+
   sessionStorage.removeItem(SESSION_KEY);
 
   $("appShell").classList.add("locked");
+
   $("authScreen").style.display = "flex";
+
+  authMode = "login";
 
   renderAuth();
 };
+
 
 /* =========================================
    INITIALIZATION
@@ -2740,13 +2863,14 @@ renderAuth();
 
 const existingSession = sessionStorage.getItem(SESSION_KEY);
 
+
 if (
-  accounts.supervisor &&
-  accounts.manager &&
+  existingSession &&
   accounts[existingSession]
 ) {
   unlock(existingSession);
 }
+
 
 </script>
 
