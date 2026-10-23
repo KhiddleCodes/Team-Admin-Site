@@ -1,0 +1,2754 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>
+BYU-Pathway Training Development and Evaluation Supervisor Hub
+</title>
+
+<style>
+:root {
+  --navy: #092e50;
+  --navy-light: #17517b;
+  --blue: #0d4779;
+  --gold: #ffc328;
+  --background: #f4f7fa;
+  --white: #ffffff;
+  --text: #20354a;
+  --muted: #64758a;
+  --border: #dce4ec;
+  --success: #13744d;
+  --danger: #b13e43;
+  --warning: #97610b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  font-family: Calibri, Aptos, "Segoe UI", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.48;
+  color: var(--text);
+  background: var(--background);
+}
+
+button,
+input,
+select,
+textarea,
+table {
+  font-family: Calibri, Aptos, "Segoe UI", Arial, sans-serif;
+}
+
+button {
+  cursor: pointer;
+  transition: background-color .16s ease,
+              border-color .16s ease;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #3e8bc7;
+  outline-offset: 2px;
+}
+
+h1, h2, h3, h4 {
+  font-family: Calibri, Aptos, "Segoe UI", Arial, sans-serif;
+  line-height: 1.3;
+}
+
+.hide {
+  display: none !important;
+}
+
+/* SIGN-IN SCREEN */
+
+.auth-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: linear-gradient(
+    90deg,
+    #092e50 0%,
+    #092e50 48%,
+    #f5f6f8 48%,
+    #f5f6f8 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.auth-card {
+  width: min(480px, 100%);
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 15px 45px #0826422c;
+}
+
+.auth-card h1 {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 15px 0 10px;
+}
+
+.auth-card p {
+  color: #61758b;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.auth-card .field {
+  margin: 13px 0;
+}
+
+.auth-card .btn {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.auth-logo {
+  width: 70px;
+  height: 70px;
+  padding: 8px;
+  background: #092e50;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.auth-error {
+  color: var(--danger);
+  font-size: 12px;
+  min-height: 18px;
+}
+
+.auth-note {
+  background: #fff7e6;
+  padding: 11px;
+  border-radius: 7px;
+  font-size: 12px;
+  color: #725516;
+  margin-top: 16px;
+}
+
+.shell.locked {
+  display: none;
+}
+
+/* APPLICATION LAYOUT */
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 252px;
+  flex-shrink: 0;
+  background: var(--navy);
+  color: #e8f1fb;
+  padding: 24px 15px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 5px 12px 30px;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  line-height: 1.3;
+}
+
+.brandmark {
+  flex-shrink: 0;
+  width: 42px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brandmark img {
+  display: block;
+  width: 38px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.brand small {
+  display: block;
+  color: #d1dce9;
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.nav {
+  display: grid;
+  gap: 3px;
+}
+
+.nav button {
+  display: block;
+  width: 100%;
+  background: transparent;
+  color: #d5e4f2;
+  border: none;
+  border-radius: 5px;
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  min-height: 43px;
+}
+
+.nav button:hover {
+  background: #174569;
+  color: white;
+}
+
+.nav button.active {
+  background: white;
+  color: #123b5d;
+  font-weight: 700;
+}
+
+/* MAIN CONTENT */
+
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.top {
+  min-height: 83px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  padding: 18px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.top h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -.025em;
+}
+
+.top p {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+.content {
+  padding: 28px 30px 42px;
+  max-width: 1450px;
+  width: 100%;
+  margin: 0 auto;
+  flex: 1;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.between {
+  justify-content: space-between;
+}
+
+.userlabel {
+  background: #f3f6f9;
+  padding: 9px 11px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #51667b;
+  font-weight: 650;
+}
+
+/* WELCOME PANEL */
+
+.welcome-panel {
+  background: linear-gradient(
+    110deg,
+    #092e50,
+    #17517b
+  );
+  border-left: 4px solid var(--gold);
+  border-radius: 7px;
+  padding: 24px 28px;
+  margin-bottom: 22px;
+  color: white;
+}
+
+.welcome-kicker {
+  font-size: 12px;
+  color: #d9e8f6;
+  letter-spacing: .04em;
+}
+
+.welcome-panel h2 {
+  font-size: 26px;
+  margin: 8px 0;
+  color: white;
+  font-weight: 700;
+}
+
+.welcome-panel p {
+  margin: 0;
+  color: #f0d795;
+  font-weight: 600;
+}
+
+/* BUTTONS */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 39px;
+  padding: 10px 15px;
+  border: 1px solid #d7e0e9;
+  border-radius: 7px;
+  background: white;
+  color: #203753;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.btn:hover {
+  background: #f0f4f8;
+}
+
+.btn.primary {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+}
+
+.btn.primary:hover {
+  background: #07365d;
+}
+
+.btn.danger {
+  color: var(--danger);
+}
+
+.linkbtn {
+  background: transparent;
+  border: none;
+  color: #07558b;
+  font-weight: 700;
+  padding: 5px;
+  font-size: 13px;
+}
+
+/* DASHBOARD CARDS */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 17px;
+}
+
+.two {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 17px;
+}
+
+.card {
+  background: white;
+  border: 1px solid #e1e5e9;
+  border-radius: 11px;
+  padding: 22px;
+  box-shadow: 0 2px 8px rgba(20,43,68,.035);
+}
+
+.metric {
+  position: relative;
+  overflow: hidden;
+}
+
+.metric:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #c6a461;
+}
+
+.metric .value {
+  font-size: 33px;
+  font-weight: 700;
+  letter-spacing: -.035em;
+  line-height: 1.15;
+  margin: 12px 0 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.section {
+  margin-top: 25px;
+}
+
+.sectionhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 17px;
+}
+
+.sectionhead h2,
+.card h2 {
+  font-size: 19px;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* EVALUATION FOCUS */
+
+.focus-overview {
+  margin-bottom: 20px;
+  border-left: 4px solid #caa64a;
+}
+
+.focus-entry {
+  padding: 15px 0;
+  border-bottom: 1px solid #e4eaf0;
+}
+
+.focus-entry:last-of-type {
+  border-bottom: none;
+}
+
+.focus-entry strong {
+  font-size: 15px;
+}
+
+.focus-entry p {
+  margin: 9px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.focus-questions {
+  color: #4e6072;
+}
+
+.focus-empty {
+  padding: 18px 0;
+  color: #718096;
+  font-size: 13px;
+}
+
+/* TABLES */
+
+.tablewrap {
+  overflow-x: auto;
+  border-radius: 7px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13.5px;
+}
+
+.table th {
+  background: #f8f9fb;
+  color: #6b7e94;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .045em;
+  white-space: nowrap;
+}
+
+.table th,
+.table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid #e9edf3;
+  vertical-align: middle;
+}
+
+.table tbody tr:hover {
+  background: #f7f9fc;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.pill {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 5px;
+  background: #e8f2ff;
+  color: #215e99;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.pill.done,
+.pill.resolved,
+.pill.active {
+  background: #e3f7ed;
+  color: #13744d;
+}
+
+.pill.blocked,
+.pill.high,
+.pill.overdue {
+  background: #fff0ef;
+  color: #b13e43;
+}
+
+.pill.progress,
+.pill.medium {
+  background: #fff4d8;
+  color: #97610b;
+}
+
+/* FORMS */
+
+.formgrid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  column-gap: 18px;
+  row-gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #41566e;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  border: 1px solid #d5dfe9;
+  border-radius: 7px;
+  padding: 11px;
+  background: white;
+  color: #1e3046;
+  font-size: 14px;
+  min-height: 42px;
+}
+
+.field textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.full {
+  grid-column: 1/-1;
+}
+
+.search,
+.filterselect {
+  min-height: 40px;
+  border: 1px solid #d8e1eb;
+  border-radius: 7px;
+  padding: 10px;
+  background: white;
+  color: #34485e;
+  font-size: 13px;
+}
+
+.search {
+  width: 250px;
+  max-width: 100%;
+}
+
+.filterselect {
+  max-width: 190px;
+}
+
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* MODAL */
+
+.dialog {
+  position: fixed;
+  inset: 0;
+  background: #081729a8;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  z-index: 100;
+}
+
+.dialog.open {
+  display: flex;
+}
+
+.modal {
+  width: 680px;
+  max-width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.modal h2 {
+  margin: 0 0 18px;
+  font-size: 22px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+/* MISCELLANEOUS */
+
+.notice {
+  background: #f0f5fa;
+  border: 1px solid #cadbea;
+  border-left: 3px solid #285c87;
+  padding: 13px 16px;
+  border-radius: 6px;
+  color: #325577;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 19px;
+}
+
+.empty {
+  padding: 48px 18px;
+  text-align: center;
+  color: #718096;
+  line-height: 1.8;
+}
+
+.quickactions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
+
+.quickactions button {
+  background: white;
+  border: 1px solid #dce3ea;
+  border-radius: 7px;
+  padding: 11px 13px;
+  color: #174c74;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.quickactions button:hover {
+  background: #edf4f9;
+}
+
+.page-intro {
+  margin-bottom: 20px;
+}
+
+.page-intro h2 {
+  font-size: 24px;
+  margin: 0 0 6px;
+}
+
+.page-intro p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.bars {
+  display: flex;
+  align-items: end;
+  gap: 16px;
+  height: 180px;
+  padding-top: 20px;
+}
+
+.baritem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: end;
+  height: 100%;
+  gap: 7px;
+  font-size: 11px;
+  color: #718096;
+}
+
+.bar {
+  width: min(45px,100%);
+  background: #c4a05a;
+  border-radius: 3px 3px 0 0;
+  min-height: 3px;
+}
+
+.statusline {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.mobilemenu {
+  display: none;
+}
+
+/* FOOTER */
+
+.site-footer {
+  margin: 20px 28px 0;
+  padding: 19px 0 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  justify-content: space-between;
+  color: #66788b;
+  font-size: 12px;
+}
+
+/* RESPONSIVE DESIGN */
+
+@media(max-width:1000px) {
+  .sidebar {
+    width: 215px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+
+  .two {
+    grid-template-columns: 1fr;
+  }
+
+  .content {
+    padding: 23px;
+  }
+}
+
+@media(max-width:720px) {
+  .sidebar {
+    display: none;
+    position: fixed;
+    z-index: 90;
+    width: 260px;
+    box-shadow: 0 0 0 100vmax #0008;
+  }
+
+  .sidebar.show {
+    display: block;
+  }
+
+  .mobilemenu {
+    display: inline-flex;
+  }
+
+  .top {
+    min-height: 70px;
+    padding: 13px 15px;
+  }
+
+  .top h1 {
+    font-size: 21px;
+  }
+
+  .content {
+    padding: 16px 14px 30px;
+  }
+
+  .card {
+    padding: 17px;
+  }
+
+  .grid {
+    gap: 11px;
+  }
+
+  .metric .value {
+    font-size: 27px;
+  }
+
+  .formgrid {
+    grid-template-columns: 1fr;
+  }
+
+  .search {
+    width: 100%;
+  }
+
+  .sectionhead {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .site-footer {
+    margin: 18px 15px 0;
+  }
+
+  .auth-screen {
+    background: #092e50;
+  }
+
+  .auth-card {
+    padding: 24px;
+  }
+
+  .quickactions button {
+    flex: 1 1 42%;
+  }
+}
+
+@media(max-width:380px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .top h1 {
+    font-size: 19px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ==========================================
+     SIGN-IN SCREEN
+========================================== -->
+
+<section class="auth-screen" id="authScreen">
+
+  <div class="auth-card">
+
+    <!-- BYU-PATHWAY LOGO -->
+
+    <div class="auth-logo">
+      <img
+        class="byupathway-logo"
+        alt="BYU-Pathway Logo"
+      >
+    </div>
+
+    <h1 id="authTitle">
+      BYU-Pathway Training Development and
+      Evaluation Supervisor Hub
+    </h1>
+
+    <p id="authDescription">
+      Training Development and Evaluation
+    </p>
+
+    <!-- SIGN-IN FORM -->
+
+    <form id="authForm">
+
+      <div id="authFields"></div>
+
+      <div
+        class="auth-error"
+        id="authError"
+        role="alert">
+      </div>
+
+      <button
+        class="btn primary"
+        type="submit"
+        id="authSubmit">
+        Continue
+      </button>
+
+    </form>
+
+    <div class="auth-note">
+      Authorized management access.
+      Records are stored locally in this browser.
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ==========================================
+     APPLICATION
+========================================== -->
+
+<div class="shell locked" id="appShell">
+
+  <!-- SIDEBAR -->
+
+  <aside class="sidebar" id="sidebar">
+
+    <div class="brand">
+
+      <div class="brandmark">
+
+        <img
+          class="byupathway-logo"
+          alt="BYU-Pathway Logo"
+        >
+
+      </div>
+
+      <div>
+        BYU-Pathway
+
+        <small>
+          Training Development and
+          Evaluation Supervisor Hub
+        </small>
+      </div>
+
+    </div>
+
+    <!-- NAVIGATION -->
+
+    <nav
+      class="nav"
+      id="nav"
+      aria-label="Main navigation">
+    </nav>
+
+  </aside>
+
+
+  <!-- ========================================
+       MAIN CONTENT
+  ======================================== -->
+
+  <main class="main">
+
+    <!-- TOP NAVIGATION -->
+
+    <header class="top">
+
+      <div class="row">
+
+        <button
+          class="btn mobilemenu"
+          id="menu"
+          type="button"
+          aria-label="Open navigation menu">
+          &#9776;
+        </button>
+
+        <div>
+
+          <h1 id="pagetitle">
+            Overview
+          </h1>
+
+          <p id="subtitle">
+            Track performance, quality,
+            and team development
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- ACCOUNT AND ACTION BUTTONS -->
+
+      <div class="row">
+
+        <span
+          class="userlabel"
+          id="userLabel">
+        </span>
+
+        <button
+          class="btn"
+          id="logout"
+          type="button">
+          Sign Out
+        </button>
+
+        <button
+          class="btn"
+          id="backup"
+          type="button">
+          Backup
+        </button>
+
+        <button
+          class="btn primary"
+          id="newbtn"
+          type="button">
+          + New Record
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <!-- DYNAMIC DASHBOARD CONTENT -->
+
+    <div
+      class="content"
+      id="content">
+    </div>
+
+
+    <!-- ======================================
+         WEBSITE FOOTER
+    ====================================== -->
+
+    <footer class="site-footer">
+
+      <span>
+        BYU-Pathway Training Development
+        and Evaluation Supervisor Hub
+      </span>
+
+      <span>
+        Team Management &bull;
+        Evaluation Operations
+      </span>
+
+      <span id="footerYear"></span>
+
+    </footer>
+
+  </main>
+
+</div>
+
+
+<!-- ==========================================
+     ADD / EDIT RECORD MODAL
+========================================== -->
+
+<div
+  class="dialog"
+  id="dialog"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="modalTitle">
+
+  <div class="modal">
+
+    <div class="row between">
+
+      <h2 id="modalTitle">
+        New Record
+      </h2>
+
+      <button
+        class="btn"
+        id="close"
+        type="button"
+        aria-label="Close">
+        &times;
+      </button>
+
+    </div>
+
+
+    <!-- RECORD FORM -->
+
+    <form id="recordform">
+
+      <div
+        class="formgrid"
+        id="formfields">
+      </div>
+
+      <div class="actions">
+
+        <button
+          type="button"
+          class="btn"
+          id="cancel">
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="btn primary">
+          Save Record
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- ==========================================
+     RESTORE BACKUP INPUT
+========================================== -->
+
+<input
+  type="file"
+  id="restorefile"
+  accept="application/json"
+  hidden
+>
+
+
+<!-- ==========================================
+     EMBEDDED BYU-PATHWAY LOGO
+========================================== -->
+
+<script>
+
+/*
+  Embedded BYU-Pathway gold logo.
+  No external image file is required.
+*/
+
+const BYUPATHWAY_LOGO = `
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 309.1 301.67">
+
+  <path
+    fill="#ffc328"
+    d="M22.83 150.9a131.12 131.12 0 0 0
+    21.33 71.87c29.9-22.1 59.93-48.21
+    62.34-65.52C110 139.23 91.08 125.7
+    92 96.41c2.63-33.85 31.88-56.86
+    44.59-65.63a124.35 124.35 0 0 1
+    19.76-11.57l-1.84 0A131.72 131.72
+    0 0 0 22.83 150.9Z"
+  />
+
+  <path
+    fill="#ffc328"
+    d="M141.23 39c-8.53 8.43-19.75
+    24.77-23 36-11.62 40.39 29.83
+    45.93 33.65 88 1.39 39.22-28.5
+    78.2-56.21 105.74a132.16 132.16
+    0 0 0 94.75 8.91c13.06-27.58
+    28.8-70.52 18.8-98.31-20.3-58.42
+    -65.23-65.83-69-98-2.43-20.88
+    5.94-32.27 20.58-45.07 7.22-6.33
+    15.66-10.63 21.95-14.07a129.87
+    129.87 0 0 0-14.45-2.33C157.21
+    25.87 148.19 32.16 141.23 39Z"
+  />
+
+  <path
+    fill="#ffc328"
+    d="M202.34 20.37l.24.2s-.01-.13-.24-.2Z"
+  />
+
+  <path
+    fill="#ffc328"
+    d="M192.68 24.8c-8.85 5.37-16.44
+    10.81-21.11 15.45s-16.33 19.65
+    -13.5 33.37c9.67 30.89 69.31
+    34.86 95.16 92.72a167.39 167.39
+    0 0 1 11.64 56.54A131.75 131.75
+    0 0 0 192.68 24.8Z"
+  />
+
+</svg>
+`;
+
+/*
+  Convert the embedded SVG into an image URL
+  and apply it to both logo elements.
+*/
+
+const logoURL =
+  "data:image/svg+xml;charset=utf-8," +
+  encodeURIComponent(BYUPATHWAY_LOGO);
+
+document.querySelectorAll(".byupathway-logo")
+  .forEach(function(image) {
+
+    image.src = logoURL;
+
+  });
+
+</script>
+
+<!--
+  PART 3 JAVASCRIPT GOES DIRECTLY BELOW THIS LINE.
+
+  Do not close the body or HTML tags yet.
+-->
+
+<script>
+"use strict";
+
+/* =========================================
+   CONFIGURATION
+========================================= */
+
+const STORAGE_KEY = "evaluation_supervisor_v1";
+const AUTH_KEY = "evaluation_supervisor_local_accounts_v2";
+const SESSION_KEY = "evaluation_supervisor_session";
+
+const AREA_OPTIONS = [
+  "Africa Central",
+  "Africa South",
+  "Africa West",
+  "Asia",
+  "Asia North",
+  "Brazil",
+  "Canada",
+  "Caribbean",
+  "Central America",
+  "Eurasian",
+  "Europe Central",
+  "Europe North",
+  "Mexico",
+  "Middle East/Africa North",
+  "North America Central",
+  "North America Northeast",
+  "North America Southeast",
+  "North America Southwest",
+  "North America West",
+  "Pacific",
+  "Philippines",
+  "South America Northwest",
+  "South America South",
+  "Utah",
+  "Other"
+];
+
+const DEFAULT_PROFILES = {
+  supervisor: {
+    name: "Ifeanyi Eme",
+    title: "Training Development – Evaluation Supervisor"
+  },
+  manager: {
+    name: "Nathan Sanders",
+    title: "Training Development Manager"
+  }
+};
+
+/* =========================================
+   SECTION DEFINITIONS
+========================================= */
+
+const defs = {
+  focuses: {
+    title: "Evaluation & Interview Focus",
+    singular: "Evaluation Focus",
+    fields: [
+      ["title", "Focus Title", "text", 1],
+      ["status", "Status", "select", 1,
+        ["Current", "Upcoming", "Completed", "On hold"]],
+      ["start", "Start Date", "date"],
+      ["end", "End Date", "date"],
+      ["area", "Area / Region", "area"],
+      ["objective", "Evaluation Objective", "textarea"],
+      ["questions", "Key Interview Questions", "textarea"],
+      ["owner", "Lead Evaluator", "person"],
+      ["notes", "Notes / Next Steps", "textarea"]
+    ]
+  },
+
+  people: {
+    title: "Team Members",
+    singular: "Team Member",
+    fields: [
+      ["name", "Full Name", "text", 1],
+      ["area", "Area / Region", "area"],
+      ["role", "Role", "text", 1],
+      ["status", "Status", "select", 1,
+        ["Active", "Onboarding", "Inactive"]],
+      ["email", "Work Email", "email"],
+      ["hours", "Weekly Hours", "number"],
+      ["notes", "Development Notes", "textarea"]
+    ]
+  },
+
+  assignments: {
+    title: "Assignments",
+    singular: "Assignment",
+    fields: [
+      ["title", "Assignment / Topic", "text", 1],
+      ["owner", "Assigned Evaluator", "person", 1],
+      ["type", "Activity Type", "select", 1,
+        ["Interview", "Gathering observation",
+         "Report", "Follow-up", "Other"]],
+      ["area", "Area / Region", "area"],
+      ["due", "Due Date", "date", 1],
+      ["status", "Status", "select", 1,
+        ["Not started", "In progress",
+         "Completed", "Blocked"]],
+      ["completed", "Completion Date", "date"],
+      ["notes", "Notes / Evidence", "textarea"]
+    ]
+  },
+
+  reviews: {
+    title: "Quality Reviews",
+    singular: "Quality Review",
+    fields: [
+      ["title", "Report / Interview Title", "text", 1],
+      ["owner", "Evaluator", "person", 1],
+      ["date", "Review Date", "date", 1],
+      ["evidence", "Evidence & Accuracy (0–25)", "score25", 1],
+      ["depth", "Depth of Findings (0–20)", "score20", 1],
+      ["implication", "Training Implications (0–20)", "score20", 1],
+      ["action", "Recommendations (0–20)", "score20", 1],
+      ["clarity", "Clarity (0–15)", "score15", 1],
+      ["feedback", "Coaching Feedback", "textarea"]
+    ]
+  },
+
+  oneonones: {
+    title: "One-on-Ones",
+    singular: "One-on-One",
+    fields: [
+      ["owner", "Evaluator", "person", 1],
+      ["date", "Meeting Date", "date", 1],
+      ["time", "Scheduled Time", "time"],
+      ["attendance", "Attendance", "select", 1,
+        ["Scheduled", "Attended", "Missed",
+         "Excused", "Rescheduled"]],
+      ["duration", "Duration (Minutes)", "number"],
+      ["reason", "Absence / Reschedule Reason", "textarea"],
+      ["rescheduledDate", "New Meeting Date", "date"],
+      ["wins", "Achievements / Wins", "textarea"],
+      ["challenges", "Challenges / Support Needed", "textarea"],
+      ["coaching", "Coaching / Feedback", "textarea"],
+      ["actions", "Agreed Action Items", "textarea"],
+      ["actionOwner", "Action Owner", "text"],
+      ["followup", "Follow-up Date", "date"],
+      ["status", "Follow-up Status", "select", 1,
+        ["Open", "In progress", "Completed"]]
+    ]
+  },
+
+  issues: {
+    title: "Issues & Risks",
+    singular: "Issue",
+    fields: [
+      ["title", "Issue / Challenge", "text", 1],
+      ["owner", "Owner", "person"],
+      ["area", "Area / Region", "area"],
+      ["priority", "Priority", "select", 1,
+        ["Low", "Medium", "High"]],
+      ["status", "Status", "select", 1,
+        ["Open", "In progress", "Resolved"]],
+      ["due", "Target Resolution", "date"],
+      ["notes", "Impact and Next Action", "textarea"]
+    ]
+  },
+
+  findings: {
+    title: "Research Findings",
+    singular: "Finding",
+    fields: [
+      ["title", "Research Focus / Finding", "text", 1],
+      ["area", "Area / Region", "area"],
+      ["date", "Date", "date", 1],
+      ["evidence", "Supporting Evidence", "textarea"],
+      ["gap", "Identified Training Need", "textarea"],
+      ["recommendation", "Recommendation", "textarea"],
+      ["status", "Decision / Implementation", "select", 1,
+        ["New", "Under review", "Accepted",
+         "In development", "Implemented", "Closed"]],
+      ["impact", "Follow-up Impact / Outcome", "textarea"]
+    ]
+  },
+
+  onboarding: {
+    title: "Recruitment & Onboarding",
+    singular: "Candidate / New Hire",
+    fields: [
+      ["name", "Candidate / Contractor Name", "text", 1],
+      ["area", "Proposed Area", "area", 1],
+      ["language", "Language Capability", "text"],
+      ["internet", "Connectivity Assessment", "select", 0,
+        ["Not checked", "Suitable", "Needs review"]],
+      ["stage", "Stage", "select", 1,
+        ["Sourcing", "Interview", "Assessment",
+         "Offer", "Onboarding", "Ready", "Not selected"]],
+      ["owner", "Internal Coordinator", "person"],
+      ["start", "Start / Interview Date", "date"],
+      ["notes", "Interview / Onboarding Notes", "textarea"]
+    ]
+  }
+};
+
+const columns = {
+  focuses: ["title", "status", "start", "end", "area"],
+  people: ["name", "area", "role", "status"],
+  assignments: ["title", "owner", "type", "due", "status"],
+  reviews: ["title", "owner", "date", "score"],
+  oneonones: [
+    "owner", "date", "attendance",
+    "rescheduledDate", "followup", "status"
+  ],
+  issues: ["title", "owner", "priority", "due", "status"],
+  findings: ["title", "area", "date", "status"],
+  onboarding: ["name", "area", "language", "stage"]
+};
+
+const navigation = [
+  ["overview", "Overview"],
+  ...Object.entries(defs).map(([key, value]) =>
+    [key, value.title]
+  ),
+  ["settings", "Data & Settings"]
+];
+
+/* =========================================
+   UTILITIES AND LOCAL STORAGE
+========================================= */
+
+const $ = id => document.getElementById(id);
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(
+    /[&<>"']/g,
+    c => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[c])
+  );
+}
+
+function localDate() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function showDate(value) {
+  if (!value) return "—";
+
+  const d = new Date(value + "T12:00:00");
+
+  return Number.isNaN(d.getTime())
+    ? value
+    : d.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      });
+}
+
+function readStorage(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+let data = readStorage(STORAGE_KEY, {});
+
+for (const key of Object.keys(defs)) {
+  if (!Array.isArray(data[key])) {
+    data[key] = [];
+  }
+}
+
+if (data.people.length === 0) {
+  data.people = [
+    {
+      id: "seed-tobiah",
+      name: "Tobiah Imegi",
+      area: "",
+      role: "Evaluator",
+      status: "Active"
+    },
+    {
+      id: "seed-john",
+      name: "John Lwamba",
+      area: "Africa South",
+      role: "Evaluator",
+      status: "Active"
+    },
+    {
+      id: "seed-apisi",
+      name: "Apisi Naina",
+      area: "",
+      role: "Evaluator",
+      status: "Active"
+    }
+  ];
+}
+
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    alert(
+      "Unable to save. Browser storage may be full or disabled."
+    );
+  }
+}
+
+save();
+
+function makeId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+
+  return "id-" + Date.now() + "-" +
+    Math.random().toString(36).slice(2);
+}
+
+function personName(id) {
+  return data.people.find(p => p.id === id)?.name || "Unassigned";
+}
+
+function score(record) {
+  return [
+    "evidence", "depth", "implication",
+    "action", "clarity"
+  ].reduce((sum, key) => sum + (Number(record[key]) || 0), 0);
+}
+
+function statusPill(value) {
+  const v = String(value || "—");
+  const lower = v.toLowerCase();
+
+  let cls = "";
+
+  if (/completed|resolved|active|ready|implemented|attended|current/.test(lower)) {
+    cls = "done";
+  } else if (/blocked|high|overdue|missed/.test(lower)) {
+    cls = "blocked";
+  } else if (/progress|medium|review|onboarding|scheduled|excused/.test(lower)) {
+    cls = "progress";
+  }
+
+  return `<span class="pill ${cls}">${escapeHTML(v)}</span>`;
+}
+
+let page = "overview";
+let searchText = "";
+let statusFilter = "";
+let editId = null;
+
+/* =========================================
+   NAVIGATION
+========================================= */
+
+function setPage(nextPage) {
+  if (
+    nextPage !== "overview" &&
+    nextPage !== "settings" &&
+    !defs[nextPage]
+  ) return;
+
+  page = nextPage;
+  searchText = "";
+  statusFilter = "";
+
+  $("sidebar").classList.remove("show");
+
+  $("pagetitle").textContent =
+    page === "overview"
+      ? "Team Overview"
+      : page === "settings"
+        ? "Data & Settings"
+        : defs[page].title;
+
+  $("newbtn").style.display =
+    ["overview", "settings"].includes(page)
+      ? "none"
+      : "";
+
+  $("nav").innerHTML = navigation.map(([key, label]) => `
+    <button
+      class="${page === key ? "active" : ""}"
+      data-nav="${key}">
+      ${escapeHTML(label)}
+    </button>
+  `).join("");
+
+  render();
+}
+
+function render() {
+  if (page === "overview") {
+    renderOverview();
+  } else if (page === "settings") {
+    renderSettings();
+  } else {
+    renderList();
+  }
+}
+
+/* =========================================
+   DASHBOARD
+========================================= */
+
+function metric(label, value, detail) {
+  return `
+    <div class="card metric">
+      <div class="muted">${escapeHTML(label)}</div>
+      <div class="value">${escapeHTML(value)}</div>
+      <div class="muted">${escapeHTML(detail)}</div>
+    </div>
+  `;
+}
+
+function miniTable(rows, headers, mapper) {
+  if (!rows.length) {
+    return `<div class="empty">No records available.</div>`;
+  }
+
+  return `
+    <div class="tablewrap">
+      <table class="table">
+        <thead>
+          <tr>
+            ${headers.map(h => `<th>${escapeHTML(h)}</th>`).join("")}
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(row => `
+            <tr>
+              ${mapper(row).map(value =>
+                `<td>${value}</td>`
+              ).join("")}
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderOverview() {
+  const role = sessionStorage.getItem(SESSION_KEY);
+  const account = accounts[role];
+  const profile = DEFAULT_PROFILES[role] || DEFAULT_PROFILES.supervisor;
+
+  const displayName = account?.username || profile.name;
+
+  const assignments = data.assignments;
+  const completed = assignments.filter(
+    a => a.status === "Completed"
+  );
+
+  const overdue = assignments.filter(
+    a => a.due &&
+      a.due < localDate() &&
+      a.status !== "Completed"
+  );
+
+  const openIssues = data.issues.filter(
+    i => i.status !== "Resolved"
+  );
+
+  const averageScore = data.reviews.length
+    ? Math.round(
+        data.reviews.reduce(
+          (sum, r) => sum + score(r), 0
+        ) / data.reviews.length
+      )
+    : null;
+
+  const activeFocuses = data.focuses.filter(
+    f => f.status === "Current"
+  );
+
+  const attended = data.oneonones.filter(
+    x => x.attendance === "Attended"
+  ).length;
+
+  const missed = data.oneonones.filter(
+    x => x.attendance === "Missed"
+  ).length;
+
+  const attendanceRate = attended + missed
+    ? Math.round(attended / (attended + missed) * 100) + "%"
+    : "—";
+
+  const focusHTML = activeFocuses.length
+    ? activeFocuses.map(f => `
+        <div class="focus-entry">
+          <div class="row between">
+            <strong>${escapeHTML(f.title)}</strong>
+            ${statusPill(f.status)}
+          </div>
+
+          <div class="muted">
+            ${escapeHTML(f.area || "All Areas")}
+            ${f.start ? " · " + showDate(f.start) : ""}
+          </div>
+
+          ${f.objective ? `
+            <p><strong>Objective:</strong>
+            ${escapeHTML(f.objective)}</p>
+          ` : ""}
+
+          ${f.questions ? `
+            <p class="focus-questions">
+              <strong>Interview Questions:</strong>
+              ${escapeHTML(f.questions)}
+            </p>
+          ` : ""}
+        </div>
+      `).join("")
+    : `<div class="focus-empty">
+         No current evaluation focus has been entered.
+       </div>`;
+
+  $("content").innerHTML = `
+    <div class="welcome-panel">
+      <div class="welcome-kicker">
+        BYU-Pathway Training Development
+      </div>
+
+      <h2>Welcome back, ${escapeHTML(displayName)}!</h2>
+
+      <p>${escapeHTML(profile.title)}</p>
+    </div>
+
+    <div class="card focus-overview">
+      <div class="sectionhead">
+        <div>
+          <h2>Current Evaluation & Interview Focus</h2>
+          <div class="muted">
+            Active research priorities and interview topics
+          </div>
+        </div>
+
+        <button class="btn primary" data-quick="focuses">
+          + Add Focus
+        </button>
+      </div>
+
+      ${focusHTML}
+
+      <button class="linkbtn" data-jump="focuses">
+        Manage Evaluation Focuses
+      </button>
+    </div>
+
+    <div class="page-intro">
+      <h2>Evaluation at a Glance</h2>
+      <p>Team activity, research quality and priorities.</p>
+
+      <div class="quickactions">
+        <button data-quick="assignments">New Assignment</button>
+        <button data-quick="oneonones">Schedule One-on-One</button>
+        <button data-quick="reviews">Review Report</button>
+        <button data-quick="issues">Log Issue</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      ${metric(
+        "Active Evaluators",
+        data.people.filter(x => x.status === "Active").length,
+        "Current team members"
+      )}
+
+      ${metric(
+        "Assignments Completed",
+        completed.length + " / " + assignments.length,
+        "All recorded assignments"
+      )}
+
+      ${metric(
+        "Average Quality Score",
+        averageScore === null ? "—" : averageScore + "/100",
+        data.reviews.length + " reviewed reports"
+      )}
+
+      ${metric(
+        "Open Issues",
+        openIssues.length,
+        overdue.length + " overdue assignments"
+      )}
+    </div>
+
+    <div class="section two">
+      <div class="card">
+        <div class="sectionhead">
+          <h2>Team Performance</h2>
+        </div>
+
+        <p class="muted">
+          One-on-one attendance:
+          <strong>${attendanceRate}</strong>
+        </p>
+
+        <p class="muted">
+          Scheduled meetings:
+          <strong>${
+            data.oneonones.filter(
+              x => x.attendance === "Scheduled"
+            ).length
+          }</strong>
+        </p>
+
+        <p class="muted">
+          Completed assignments:
+          <strong>${completed.length}</strong>
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="sectionhead">
+          <h2>Supervisor Priorities</h2>
+        </div>
+
+        <div class="statusline">
+          ${statusPill(overdue.length + " overdue")}
+          ${statusPill(openIssues.length + " open issues")}
+        </div>
+
+        <p class="muted">
+          Review late assignments, resolve challenges,
+          and follow up on coaching commitments.
+        </p>
+
+        <button class="btn" data-jump="assignments">
+          View Assignments
+        </button>
+
+        <button class="btn" data-jump="issues">
+          View Issues
+        </button>
+      </div>
+    </div>
+
+    <div class="section two">
+      <div class="card">
+        <div class="sectionhead">
+          <h2>Upcoming Assignments</h2>
+          <button class="linkbtn" data-jump="assignments">
+            See All
+          </button>
+        </div>
+
+        ${miniTable(
+          assignments
+            .filter(x => x.status !== "Completed")
+            .sort((a, b) =>
+              (a.due || "9999").localeCompare(b.due || "9999")
+            )
+            .slice(0, 6),
+          ["Assignment", "Evaluator", "Due"],
+          x => [
+            escapeHTML(x.title),
+            escapeHTML(personName(x.owner)),
+            showDate(x.due)
+          ]
+        )}
+      </div>
+
+      <div class="card">
+        <div class="sectionhead">
+          <h2>Team Snapshot</h2>
+          <button class="linkbtn" data-jump="people">
+            View Team
+          </button>
+        </div>
+
+        ${miniTable(
+          data.people.slice(0, 6),
+          ["Evaluator", "Area", "Status"],
+          x => [
+            escapeHTML(x.name),
+            escapeHTML(x.area || "Not assigned"),
+            statusPill(x.status)
+          ]
+        )}
+      </div>
+    </div>
+  `;
+}
+
+/* =========================================
+   RECORD TABLES
+========================================= */
+
+function getColumnLabel(section, key) {
+  if (key === "score") return "Score";
+
+  return defs[section].fields.find(
+    f => f[0] === key
+  )?.[1] || key;
+}
+
+function cellValue(record, key) {
+  if (key === "score") {
+    return score(record) + "/100";
+  }
+
+  if (key === "owner") {
+    return escapeHTML(personName(record.owner));
+  }
+
+  if ([
+    "due", "date", "followup", "start",
+    "end", "completed", "rescheduledDate"
+  ].includes(key)) {
+    return showDate(record[key]);
+  }
+
+  if ([
+    "status", "attendance", "priority", "stage"
+  ].includes(key)) {
+    return statusPill(record[key]);
+  }
+
+  return escapeHTML(record[key] || "—");
+}
+
+function oneOnOneSummary() {
+  const records = data.oneonones;
+
+  const count = status => records.filter(
+    r => r.attendance === status
+  ).length;
+
+  const attended = count("Attended");
+  const missed = count("Missed");
+  const excused = count("Excused");
+  const rescheduled = count("Rescheduled");
+  const scheduled = count("Scheduled");
+
+  const rate = attended + missed
+    ? Math.round(attended / (attended + missed) * 100) + "%"
+    : "—";
+
+  return `
+    <div class="grid" style="margin-bottom:18px">
+      ${metric("Attended", attended, "Completed meetings")}
+      ${metric("Missed", missed, "Unexcused absences")}
+      ${metric(
+        "Excused / Rescheduled",
+        excused + rescheduled,
+        "Other attendance outcomes"
+      )}
+      ${metric("Attendance Rate", rate, "Attended vs missed")}
+    </div>
+
+    <div class="notice">
+      ${scheduled} scheduled meeting(s).
+      Excused and rescheduled meetings are excluded
+      from the attendance-rate calculation.
+    </div>
+  `;
+}
+
+function renderList() {
+  const section = defs[page];
+
+  const statusKey =
+    page === "oneonones" ? "attendance" :
+    page === "onboarding" ? "stage" : "status";
+
+  const rows = data[page].filter(record => {
+    const text = (
+      JSON.stringify(record) + " " +
+      personName(record.owner)
+    ).toLowerCase();
+
+    return text.includes(searchText.toLowerCase()) &&
+      (!statusFilter ||
+        String(record[statusKey] || "") === statusFilter);
+  });
+
+  const availableStatuses = [
+    ...new Set(
+      data[page]
+        .map(r => r[statusKey])
+        .filter(Boolean)
+    )
+  ].sort();
+
+  $("content").innerHTML = `
+    <div class="sectionhead">
+      <div>
+        <h2>${escapeHTML(section.title)}</h2>
+        <div class="muted">
+          ${data[page].length} records
+        </div>
+      </div>
+
+      <div class="filter">
+        <select class="filterselect" id="statusfilter">
+          <option value="">All Statuses</option>
+
+          ${availableStatuses.map(s => `
+            <option value="${escapeHTML(s)}"
+              ${statusFilter === s ? "selected" : ""}>
+              ${escapeHTML(s)}
+            </option>
+          `).join("")}
+        </select>
+
+        <input
+          class="search"
+          id="search"
+          placeholder="Search records..."
+          value="${escapeHTML(searchText)}"
+        >
+
+        <button class="btn" id="exportcsv">
+          Export CSV
+        </button>
+
+        <button class="btn primary" id="addrecord">
+          + Add ${escapeHTML(section.singular)}
+        </button>
+      </div>
+    </div>
+
+    ${page === "oneonones" ? oneOnOneSummary() : ""}
+
+    <div class="card tablewrap">
+      ${rows.length ? `
+        <table class="table">
+          <thead>
+            <tr>
+              ${columns[page].map(key =>
+                `<th>${escapeHTML(getColumnLabel(page, key))}</th>`
+              ).join("")}
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            ${rows.map(record => `
+              <tr>
+                ${columns[page].map(key =>
+                  `<td>${cellValue(record, key)}</td>`
+                ).join("")}
+
+                <td>
+                  <button class="linkbtn"
+                    data-edit="${escapeHTML(record.id)}">
+                    Edit
+                  </button>
+
+                  <button class="linkbtn"
+                    style="color:#a12b3b"
+                    data-delete="${escapeHTML(record.id)}">
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      ` : `
+        <div class="empty">
+          No matching records found.
+        </div>
+      `}
+    </div>
+  `;
+
+  $("statusfilter").onchange = e => {
+    statusFilter = e.target.value;
+    renderList();
+  };
+
+  $("search").oninput = e => {
+    searchText = e.target.value;
+    renderList();
+    $("search").focus();
+  };
+
+  $("addrecord").onclick = () => openModal();
+  $("exportcsv").onclick = () => exportCSV(page);
+}
+
+/* =========================================
+   ADD / EDIT RECORDS
+========================================= */
+
+function formField(field, record) {
+  const [key, label, type, required, choices] = field;
+
+  const value = record[key] ??
+    (page === "oneonones" && key === "attendance"
+      ? "Scheduled"
+      : page === "oneonones" && key === "status"
+        ? "Open"
+        : "");
+
+  const requiredAttribute = required ? "required" : "";
+
+  let input = "";
+
+  if (type === "textarea") {
+    input = `
+      <textarea name="${key}" ${requiredAttribute}>${
+        escapeHTML(value)
+      }</textarea>
+    `;
+  } else if (
+    type === "select" ||
+    type === "person" ||
+    type === "area"
+  ) {
+    let options = [];
+
+    if (type === "person") {
+      options = data.people.map(p => [p.id, p.name]);
+    } else if (type === "area") {
+      options = AREA_OPTIONS.map(a => [a, a]);
+
+      if (value && !AREA_OPTIONS.includes(value)) {
+        options.push([value, value]);
+      }
+    } else {
+      options = (choices || []).map(c => [c, c]);
+    }
+
+    input = `
+      <select name="${key}" ${requiredAttribute}>
+        <option value="">Select...</option>
+        ${options.map(([optionValue, optionLabel]) => `
+          <option value="${escapeHTML(optionValue)}"
+            ${String(value) === String(optionValue)
+              ? "selected" : ""}>
+            ${escapeHTML(optionLabel)}
+          </option>
+        `).join("")}
+      </select>
+    `;
+  } else {
+    const isScore = type.startsWith("score");
+    const actualType = isScore ? "number" : type;
+
+    const max = isScore
+      ? `max="${Number(type.slice(5))}"`
+      : "";
+
+    input = `
+      <input
+        name="${key}"
+        type="${actualType}"
+        value="${escapeHTML(value)}"
+        ${isScore ? 'min="0" step="1"' : ""}
+        ${max}
+        ${requiredAttribute}
+      >
+    `;
+  }
+
+  return `
+    <label class="field ${type === "textarea" ? "full" : ""}">
+      ${escapeHTML(label)}
+      ${required ? " *" : ""}
+      ${input}
+    </label>
+  `;
+}
+
+function openModal(id = null) {
+  editId = id;
+
+  const record = id
+    ? data[page].find(r => r.id === id)
+    : {};
+
+  if (id && !record) return;
+
+  $("modalTitle").textContent =
+    (id ? "Edit " : "New ") + defs[page].singular;
+
+  $("formfields").innerHTML = defs[page].fields
+    .map(field => formField(field, record))
+    .join("");
+
+  $("dialog").classList.add("open");
+
+  $("formfields")
+    .querySelector("input,select,textarea")
+    ?.focus();
+}
+
+function closeModal() {
+  $("dialog").classList.remove("open");
+  editId = null;
+}
+
+$("recordform").onsubmit = e => {
+  e.preventDefault();
+
+  const values = Object.fromEntries(
+    new FormData(e.currentTarget).entries()
+  );
+
+  if (
+    page === "assignments" &&
+    values.status === "Completed" &&
+    !values.completed
+  ) {
+    values.completed = localDate();
+  }
+
+  if (editId) {
+    const index = data[page].findIndex(
+      r => r.id === editId
+    );
+
+    if (index >= 0) {
+      data[page][index] = {
+        ...data[page][index],
+        ...values
+      };
+    }
+  } else {
+    data[page].push({
+      ...values,
+      id: makeId(),
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  save();
+  closeModal();
+  render();
+};
+
+/* =========================================
+   DATA EXPORT AND BACKUP
+========================================= */
+
+function downloadFile(filename, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function backup() {
+  const backupData = {
+    app: "BYU-Pathway Training Development and Evaluation Supervisor Hub",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    data
+  };
+
+  downloadFile(
+    "evaluation-dashboard-backup-" + localDate() + ".json",
+    JSON.stringify(backupData, null, 2),
+    "application/json"
+  );
+}
+
+function exportCSV(section) {
+  const fields = defs[section].fields.map(f => f[0]);
+
+  const headers = [...fields, "id"];
+
+  const quote = value =>
+    '"' + String(value ?? "").replace(/"/g, '""') + '"';
+
+  const lines = [
+    headers.map(quote).join(","),
+    ...data[section].map(record =>
+      headers.map(key =>
+        quote(
+          key === "owner"
+            ? personName(record[key])
+            : record[key]
+        )
+      ).join(",")
+    )
+  ];
+
+  downloadFile(
+    section + "-" + localDate() + ".csv",
+    "\ufeff" + lines.join("\r\n"),
+    "text/csv;charset=utf-8"
+  );
+}
+
+$("restorefile").onchange = async e => {
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+  try {
+    const backupData = JSON.parse(await file.text());
+    const restored = backupData.data;
+
+    if (
+      !restored ||
+      !Object.keys(defs).every(
+        key => Array.isArray(restored[key])
+      )
+    ) {
+      throw new Error("Invalid backup format.");
+    }
+
+    if (confirm("Replace all current records with this backup?")) {
+      data = restored;
+      save();
+      setPage("overview");
+      alert("Backup restored successfully.");
+    }
+  } catch (error) {
+    alert("Unable to restore backup: " + error.message);
+  }
+
+  e.target.value = "";
+};
+
+/* =========================================
+   SETTINGS
+========================================= */
+
+function renderSettings() {
+  $("content").innerHTML = `
+    <div class="card" style="margin-bottom:16px">
+      <h2>Data Backup</h2>
+
+      <p class="muted">
+        Export a backup of all dashboard records.
+      </p>
+
+      <div class="row">
+        <button class="btn primary" id="settingsBackup">
+          Download Backup
+        </button>
+
+        <button class="btn" id="settingsRestore">
+          Restore Backup
+        </button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2>Local Access</h2>
+
+      <p class="muted">
+        Supervisor and Manager accounts are configured
+        separately on this device.
+      </p>
+
+      <p class="muted">
+        Records are stored locally and are not
+        automatically synchronized between computers.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Data Management</h2>
+
+      <p class="muted">
+        Export a backup before clearing browser data.
+      </p>
+
+      <button class="btn danger" id="clearRecords">
+        Delete All Local Records
+      </button>
+    </div>
+  `;
+
+  $("settingsBackup").onclick = backup;
+
+  $("settingsRestore").onclick = () =>
+    $("restorefile").click();
+
+  $("clearRecords").onclick = () => {
+    if (
+      confirm("Delete all records from this browser?") &&
+      confirm("This cannot be undone without a backup. Continue?")
+    ) {
+      for (const key of Object.keys(defs)) {
+        data[key] = [];
+      }
+
+      save();
+      render();
+    }
+  };
+}
+
+/* =========================================
+   EVENTS
+========================================= */
+
+$("close").onclick = closeModal;
+$("cancel").onclick = closeModal;
+
+$("dialog").onclick = e => {
+  if (e.target === $("dialog")) {
+    closeModal();
+  }
+};
+
+$("menu").onclick = () => {
+  $("sidebar").classList.toggle("show");
+};
+
+$("backup").onclick = backup;
+
+$("newbtn").onclick = () => {
+  if (defs[page]) openModal();
+};
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    closeModal();
+  }
+});
+
+document.addEventListener("click", e => {
+  const button = e.target.closest(
+    "[data-nav],[data-jump],[data-quick]," +
+    "[data-edit],[data-delete]"
+  );
+
+  if (!button) return;
+
+  if (button.dataset.quick) {
+    setPage(button.dataset.quick);
+    openModal();
+    return;
+  }
+
+  if (button.dataset.nav) {
+    setPage(button.dataset.nav);
+    return;
+  }
+
+  if (button.dataset.jump) {
+    setPage(button.dataset.jump);
+    return;
+  }
+
+  if (button.dataset.edit) {
+    openModal(button.dataset.edit);
+    return;
+  }
+
+  if (button.dataset.delete) {
+    if (confirm("Delete this record?")) {
+      data[page] = data[page].filter(
+        r => r.id !== button.dataset.delete
+      );
+
+      save();
+      render();
+    }
+  }
+});
+
+/* =========================================
+   SUPERVISOR AND MANAGER AUTHENTICATION
+========================================= */
+
+let accounts = readStorage(AUTH_KEY, {});
+
+function authInput(name, label, type = "text") {
+  return `
+    <label class="field">
+      ${escapeHTML(label)}
+      <input
+        name="${name}"
+        type="${type}"
+        required
+        autocomplete="${type === "password" ? "off" : "name"}"
+      >
+    </label>
+  `;
+}
+
+function renderAuth() {
+  const needsSupervisor = !accounts.supervisor;
+  const needsManager =
+    !!accounts.supervisor && !accounts.manager;
+
+  const mode = needsSupervisor
+    ? "supervisorSetup"
+    : needsManager
+      ? "managerSetup"
+      : "login";
+
+  $("authForm").dataset.mode = mode;
+  $("authError").textContent = "";
+
+  $("authTitle").textContent =
+    mode === "supervisorSetup"
+      ? "Set Up Supervisor Account"
+      : mode === "managerSetup"
+        ? "Set Up Manager Account"
+        : "Sign In";
+
+  $("authDescription").textContent =
+    mode === "login"
+      ? "BYU-Pathway Training Development and Evaluation Supervisor Hub"
+      : "Create an account for this device.";
+
+  if (mode === "login") {
+    $("authFields").innerHTML = `
+      <label class="field">
+        Account
+        <select name="role" required>
+          <option value="supervisor">Supervisor</option>
+          <option value="manager">Manager</option>
+        </select>
+      </label>
+
+      ${authInput("password", "Password", "password")}
+    `;
+  } else {
+    $("authFields").innerHTML = `
+      ${authInput("username", "Display Name")}
+      ${authInput("password", "Create Password", "password")}
+      ${authInput("confirm", "Confirm Password", "password")}
+    `;
+  }
+
+  $("authSubmit").textContent =
+    mode === "login" ? "Sign In" : "Save and Continue";
+}
+
+function bytesToHex(bytes) {
+  return Array.from(bytes)
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function hashPassword(password, saltHex) {
+  if (!globalThis.crypto?.subtle) {
+    throw new Error(
+      "Secure browser cryptography is unavailable. " +
+      "Try opening the site using localhost in Chrome or Edge."
+    );
+  }
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"]
+  );
+
+  const salt = Uint8Array.from(
+    saltHex.match(/../g).map(h => parseInt(h, 16))
+  );
+
+  const bits = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt,
+      iterations: 160000,
+      hash: "SHA-256"
+    },
+    key,
+    256
+  );
+
+  return bytesToHex(new Uint8Array(bits));
+}
+
+function unlock(role) {
+  sessionStorage.setItem(SESSION_KEY, role);
+
+  $("authScreen").style.display = "none";
+  $("appShell").classList.remove("locked");
+
+  const profile = DEFAULT_PROFILES[role];
+
+  $("userLabel").textContent =
+    (accounts[role]?.username || profile.name) +
+    " · " +
+    (role === "manager" ? "Manager" : "Supervisor");
+
+  setPage("overview");
+}
+
+$("authForm").onsubmit = async e => {
+  e.preventDefault();
+
+  const form = new FormData(e.currentTarget);
+  const mode = $("authForm").dataset.mode;
+  const password = String(form.get("password") || "");
+
+  $("authSubmit").disabled = true;
+
+  try {
+    if (mode === "login") {
+      const role = String(form.get("role"));
+      const account = accounts[role];
+
+      if (!account) {
+        throw new Error("Account has not been configured.");
+      }
+
+      const hashed = await hashPassword(
+        password,
+        account.salt
+      );
+
+      if (hashed !== account.hash) {
+        throw new Error("Incorrect password.");
+      }
+
+      unlock(role);
+    } else {
+      if (password.length < 10) {
+        throw new Error(
+          "Password must contain at least 10 characters."
+        );
+      }
+
+      if (password !== form.get("confirm")) {
+        throw new Error("Passwords do not match.");
+      }
+
+      const role = mode === "supervisorSetup"
+        ? "supervisor"
+        : "manager";
+
+      const username = String(
+        form.get("username") || ""
+      ).trim();
+
+      if (!username) {
+        throw new Error("Enter your display name.");
+      }
+
+      const salt = bytesToHex(
+        crypto.getRandomValues(new Uint8Array(16))
+      );
+
+      accounts[role] = {
+        username,
+        salt,
+        hash: await hashPassword(password, salt)
+      };
+
+      localStorage.setItem(
+        AUTH_KEY,
+        JSON.stringify(accounts)
+      );
+
+      renderAuth();
+    }
+  } catch (error) {
+    $("authError").textContent = error.message;
+  } finally {
+    $("authSubmit").disabled = false;
+  }
+};
+
+$("logout").onclick = () => {
+  sessionStorage.removeItem(SESSION_KEY);
+
+  $("appShell").classList.add("locked");
+  $("authScreen").style.display = "flex";
+
+  renderAuth();
+};
+
+/* =========================================
+   INITIALIZATION
+========================================= */
+
+$("footerYear").textContent =
+  "© " + new Date().getFullYear();
+
+renderAuth();
+
+const existingSession = sessionStorage.getItem(SESSION_KEY);
+
+if (
+  accounts.supervisor &&
+  accounts.manager &&
+  accounts[existingSession]
+) {
+  unlock(existingSession);
+}
+
+</script>
+
+</body>
+</html>
