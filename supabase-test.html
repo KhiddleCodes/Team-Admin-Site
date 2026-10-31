@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Supabase Authentication Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+  <h2>Supabase Test Login</h2>
+  <p>Use your existing test account.</p>
+  <form id="testLogin">
+    <label for="email">Email</label>
+    <input id="email" type="email" required autocomplete="username">
+    <label for="password">Password</label>
+    <input id="password" type="password" required autocomplete="current-password">
+    <button type="submit">Test Sign In</button>
+  </form>
+  <p id="result" role="status" aria-live="polite"></p>
+  <script>
+    const SUPABASE_URL = "https://mpsuztresbdukdescyiq.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Wc35j21r6xrB4IPN8qLVFA_oX6QyBET";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+    document.getElementById("testLogin").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const result = document.getElementById("result");
+      const button = this.querySelector('button[type="submit"]');
+      result.textContent = "Signing in...";
+      button.disabled = true;
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) {
+          result.textContent = "Sign-in failed: " + error.message;
+          return;
+        }
+        result.textContent = "Sign-in successful! Authenticated email: " + data.user.email;
+      } catch (error) {
+        result.textContent = "Connection error: " + error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
