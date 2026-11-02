@@ -2564,8 +2564,8 @@ const oldUnlock=unlock;
 let generation=0;
 const isLeader=()=>!!profile?.supabaseUserId&&['manager','supervisor'].includes(String(profile.role).toLowerCase());
 const client=()=>window.hubSupabaseClient;
-const fields='id,full_name,email,role,evaluator_level,auth_user_id,assigned_areas,status,weekly_hours,development_notes,updated_at';
-const mapMember=r=>({id:String(r.id),name:r.full_name||'',email:r.email||'',role:r.role||'',evaluatorLevel:r.evaluator_level??'',auth_user_id:r.auth_user_id||'',area:r.assigned_areas||'',status:r.status||'',hours:r.weekly_hours??'',notes:r.development_notes||'',updated_at:r.updated_at||''});
+const fields='id,full_name,email,role,evaluator_level,auth_user_id,assigned_areas,status,weekly_hours,development_notes,employment_stage,employment_effective,employment_message,updated_at';
+const mapMember=r=>({id:String(r.id),name:r.full_name||'',email:r.email||'',role:r.role||'',evaluatorLevel:r.evaluator_level??'',auth_user_id:r.auth_user_id||'',area:r.assigned_areas||'',status:r.status||'',hours:r.weekly_hours??'',notes:r.development_notes||'',employmentStage:r.employment_stage||'',employmentEffective:r.employment_effective||'',employmentMessage:r.employment_message||'',updated_at:r.updated_at||''});
 async function loadDirectory(){
  lastDirectoryRefresh=Date.now();
  const uid=profile?.supabaseUserId,seq=++generation;if(!uid||!client())return;
@@ -2588,7 +2588,7 @@ saveRecord=async function(e){
   const name=String(v.name||'').trim(),email=String(v.email||'').trim();
   if(!name)throw Error('Enter a full name.');
   if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw Error('Enter a valid work email.');
-  const payload={full_name:name,email:email||null,assigned_areas:String(v.area||''),status:String(v.status||'Onboarding'),weekly_hours:v.hours===''||v.hours==null?null:Number(v.hours),development_notes:String(v.notes||''),updated_at:new Date().toISOString()};
+  const payload={full_name:name,email:email||null,assigned_areas:String(v.area||''),status:String(v.status||'Onboarding'),weekly_hours:v.hours===''||v.hours==null?null:Number(v.hours),development_notes:String(v.notes||''),employment_stage:String(v.employmentStage||''),employment_effective:v.employmentEffective||null,employment_message:String(v.employmentMessage||''),updated_at:new Date().toISOString()};
   if(payload.weekly_hours!==null&&(!Number.isFinite(payload.weekly_hours)||payload.weekly_hours<0))throw Error('Weekly hours must be a non-negative number.');
   let query;
   if(editId!=null){
@@ -3085,6 +3085,65 @@ setInterval(()=>{if(leader()&&loadedUser!==profile.supabaseUserId)load(true);els
 // Authentication assigns supabaseUserId after unlock(); detect the completed session.
 setInterval(()=>{if(leader()&&loadedUser!==profile.supabaseUserId)load(true);},1500);
 window.hubRefreshContracts=()=>load(true);
+})();
+</script>
+<script id="hub-evaluator-own-contract-supabase-2026">
+/* Read-only, authenticated, evaluator-scoped employment contract synchronization. */
+(function(){
+ 'use strict';
+ let busy=false, lastUser='', lastFetch=0;
+ const client=()=>window.hubSupabaseClient;
+ const evaluator=()=>typeof profile!=='undefined'&&profile&&String(profile.role||'').startsWith('evaluator:');
+ async function refreshOwnContract(force=false){
+  if(!evaluator()||!client()||busy)return;
+  busy=true;
+  try{
+   const {data:authData,error:authError}=await client().auth.getUser();
+   if(authError)throw authError;
+   const uid=authData?.user?.id;
+   if(!uid)throw Error('Please sign in to view your employment contract.');
+   if(!force&&uid===lastUser&&Date.now()-lastFetch<20000)return;
+   const {data:member,error:memberError}=await client().from('team_members')
+    .select('id,full_name,email,status,weekly_hours,assigned_areas,evaluator_level,employment_stage,employment_effective,employment_message')
+    .eq('auth_user_id',uid).eq('role','evaluator').single();
+   if(memberError)throw memberError;
+   const {data:contracts,error:contractError}=await client().from('evaluator_contracts')
+    .select('id,evaluator_id,contract_title,contracting_company,other_company_name,start_date,end_date,hourly_pay,status,notes,contracted_weekly_hours,currency,renewal_stage,reminder_window_days,decision_date,renewal_notes,created_at')
+    .eq('evaluator_id',member.id).order('created_at',{ascending:false});
+   if(contractError)throw contractError;
+   // A second identity check prevents late responses from being rendered after an account switch.
+   const {data:check}=await client().auth.getUser();
+   if(!evaluator()||check?.user?.id!==uid)return;
+   const owner=String(member.id);
+   data.contracts=(contracts||[]).map(r=>({id:r.id,owner,company:r.contracting_company||'',companyOther:r.other_company_name||'',start:r.start_date||'',end:r.end_date||'',hours:r.contracted_weekly_hours??'',hourlyPay:r.hourly_pay??'',currency:r.currency||'USD',status:r.renewal_stage||r.status||'Active',reminderDays:String(r.reminder_window_days??30),decisionDate:r.decision_date||'',renewalNotes:r.renewal_notes||r.notes||''}));
+   // The existing evaluator view uses a legacy local person ID. Match it to the authenticated DB ID.
+   const person=(data.people||[]).find(p=>String(p.id)===String(profile.personId));
+   if(person){
+    person.id=owner;
+    person.status=member.status||'';
+    person.employmentStage=member.employment_stage||'';
+    person.employmentEffective=member.employment_effective||'';
+    person.employmentMessage=member.employment_message||'';
+   }else{
+    data.people=data.people||[];
+    data.people.push({id:owner,name:member.full_name||'',email:member.email||'',role:'evaluator',status:member.status||'',employmentStage:member.employment_stage||'',employmentEffective:member.employment_effective||'',employmentMessage:member.employment_message||''});
+   }
+   profile.personId=owner;
+   lastUser=uid;lastFetch=Date.now();
+   if(page==='evstatus'||page==='evaluatorhome')render();
+  }catch(err){
+   console.warn('Own employment contract sync failed:',err);
+   if(page==='evstatus'){
+    const host=document.getElementById('content');
+    if(host){const note=document.createElement('div');note.className='notice error';note.textContent='Unable to load your contract from Supabase: '+(err.message||'Unknown error');host.prepend(note);}
+   }
+  }finally{busy=false;}
+ }
+ const oldSetPage=setPage;
+ setPage=function(name){const out=oldSetPage.apply(this,arguments);if(evaluator()&&['evstatus','evaluatorhome','evaluatorprofile'].includes(name))refreshOwnContract(true);return out;};
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&evaluator()&&page==='evstatus')refreshOwnContract(true);});
+ setInterval(()=>{if(evaluator()&&page==='evstatus')refreshOwnContract(false);},15000);
+ setInterval(()=>{if(evaluator()&&lastUser!==profile.supabaseUserId)refreshOwnContract(false);},3000);
 })();
 </script>
 </body></html>
