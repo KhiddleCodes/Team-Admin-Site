@@ -2567,6 +2567,7 @@ const client=()=>window.hubSupabaseClient;
 const fields='id,full_name,email,role,evaluator_level,auth_user_id,assigned_areas,status,weekly_hours,development_notes,updated_at';
 const mapMember=r=>({id:String(r.id),name:r.full_name||'',email:r.email||'',role:r.role||'',evaluatorLevel:r.evaluator_level??'',auth_user_id:r.auth_user_id||'',area:r.assigned_areas||'',status:r.status||'',hours:r.weekly_hours??'',notes:r.development_notes||'',updated_at:r.updated_at||''});
 async function loadDirectory(){
+ lastDirectoryRefresh=Date.now();
  const uid=profile?.supabaseUserId,seq=++generation;if(!uid||!client())return;
  const {data:rows,error}=await client().from('team_members').select(fields).order('id');
  if(error){console.error('Team Directory synchronization failed:',error.message);if(isLeader()&&page==='people')notify('Team Directory could not load: '+error.message,true);return;}
@@ -2611,6 +2612,26 @@ deleteRecord=function(id){if(page==='people'){notify('Team member deletion is re
 const previousUnlock=unlock;
 unlock=function(role,newSignIn){if(profile?.supabaseUserId)data.people=[];previousUnlock(role,newSignIn);};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&profile?.supabaseUserId)loadDirectory();});
+// Refresh on every Team Directory navigation, including mobile navigation.
+const directorySetPage=setPage;
+setPage=function(p,fromHistory=false){
+ const result=directorySetPage(p,fromHistory);
+ if(p==='people'&&profile?.supabaseUserId){loadDirectory();}
+ return result;
+};
+// Reconcile open directory views periodically across devices; never upload local data.
+let lastDirectoryRefresh=0;
+const originalLoadDirectory=loadDirectory;
+window.hubRefreshTeamDirectory=async function(){
+ lastDirectoryRefresh=Date.now();return originalLoadDirectory();
+};
+window.addEventListener('focus',()=>{
+ if(profile?.supabaseUserId&&page==='people')window.hubRefreshTeamDirectory();
+});
+setInterval(()=>{
+ if(!document.hidden&&profile?.supabaseUserId&&page==='people'&&Date.now()-lastDirectoryRefresh>15000)
+  window.hubRefreshTeamDirectory();
+},5000);
 })();
 </script><style id="hub-password-security-css">
 .hub-password-link{display:block;margin:10px auto 0;background:transparent;border:0;color:#175b89;text-decoration:underline;font-weight:650;font-size:13px;padding:8px;cursor:pointer}
