@@ -1174,7 +1174,7 @@ function renderEnhancedModule(){
    const month=hubMonth();top=`<div class="hub-module-hero"><h2>Monthly management report</h2><p>Review the month's activity and add management notes before sharing.</p><div class="row"><label>Reporting month <input id="mgMonth" type="month" value="${month}"></label><button class="btn primary" id="mgDownload">Download report</button></div></div>`;
  }else if(current==='workHours'){
    const total=all.reduce((s,r)=>s+(Number(r.hours)||0),0);
-   const cost=all.reduce((s,r)=>{const c=(data.contracts||[]).find(c=>c.owner===r.owner&&!['Ended'].includes(c.status));return s+(Number(r.hours)||0)*(Number(c?.hourlyPay)||0)},0);
+   const cost=all.reduce((s,r)=>{const c=(data.contracts||[]).find(c=>c.owner===r.owner&&!['Ended'].includes(c.status));return s+(Number.isFinite(Number(r.hourlyRate))?Number(r.totalCost??Number(r.hours)*Number(r.hourlyRate)):(Number(r.hours)||0)*(Number(c?.hourlyPay)||0))},0);
    const currencies=[...new Set((data.contracts||[]).filter(c=>all.some(r=>r.owner===c.owner)).map(c=>c.currency||'USD'))];
    top=`<div class="hub-module-hero"><h2>Hours & contract costs</h2><p>Compare recorded hours with contracted rates. Estimates are based on the matching contract record.</p></div><div class="grid">${metric('Hours logged',total.toFixed(1),'All entries')}${metric('Entries',start,'Weekly submissions')}${metric('Estimated cost',currencies.length===1?currencies[0]+' '+cost.toFixed(2):'See rates','Totals require a single currency')}${metric('Needs review',all.filter(r=>r.status==='Submitted').length,'Submitted hours entries')}</div>`;
  }else if(current==='reportQueue'){
@@ -3146,6 +3146,86 @@ window.hubRefreshContracts=()=>load(true);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&evaluator()&&page==='evstatus')refreshOwnContract(true);});
  setInterval(()=>{if(evaluator()&&page==='evstatus')refreshOwnContract(false);},15000);
  setInterval(()=>{if(evaluator()&&lastUser!==profile.supabaseUserId)refreshOwnContract(false);},3000);
+})();
+</script>
+<script id="hub-weekly-hours-supabase-2026">
+/* Weekly hours: Supabase authoritative for authenticated leadership.
+   Existing browser-local entries are deliberately NOT auto-imported. */
+(function(){
+'use strict';
+const client=()=>window.hubSupabaseClient;
+const leader=()=>typeof profile!=='undefined' && !!profile?.supabaseUserId && ['manager','supervisor'].includes(String(profile.role||'').toLowerCase());
+let loading=false,loadedFor='',lastLoaded=0;
+const isoDate=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+function ending(week){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(week||'')))throw Error('Choose a valid reporting week.');
+ const d=new Date(week+'T12:00:00');if(Number.isNaN(d.getTime())||isoDate(d)!==week)throw Error('Invalid reporting date.');
+ // UI stores week-start Monday; database stores week-ending Sunday.
+ const day=d.getDay();if(day!==1)throw Error('Week starting must be a Monday.');
+ d.setDate(d.getDate()+6);return isoDate(d);
+}
+function starting(end){const d=new Date(end+'T12:00:00');d.setDate(d.getDate()-6);return isoDate(d);}
+function mapRow(r){return {id:r.id,owner:String(r.evaluator_id),week:starting(r.week_ending),hours:String(r.hours_worked),activity:r.notes||'',notes:r.notes||'',status:r.review_status||'Submitted',hourlyRate:Number(r.hourly_rate),totalCost:Number(r.total_cost??Number(r.hours_worked)*Number(r.hourly_rate)),synced:true};}
+async function load(force=false){
+ if(!leader()||!client()||loading)return;
+ const uid=profile.supabaseUserId;
+ if(!force&&loadedFor===uid&&Date.now()-lastLoaded<12000)return;
+ loading=true;
+ try{
+  const {data:rows,error}=await client().from('weekly_hours_costs').select('*').order('week_ending',{ascending:false}).limit(1000);
+  if(error)throw error;
+  if(!leader()||profile.supabaseUserId!==uid)return;
+  // Do not overwrite the local backup; only the visible authoritative collection.
+  data.workHours=(rows||[]).map(mapRow);loadedFor=uid;lastLoaded=Date.now();
+  if(page==='workHours')render();
+ }catch(err){console.error('Weekly hours synchronization failed:',err);if(page==='workHours')notify('Unable to load weekly hours from Supabase: '+err.message,true);}
+ finally{loading=false;}
+}
+async function contractFor(evaluator,weekEnding){
+ const {data:rows,error}=await client().from('evaluator_contracts').select('id,hourly_pay,currency,start_date,end_date,status').eq('evaluator_id',evaluator);
+ if(error)throw error;
+ const matches=(rows||[]).filter(c=>c.start_date<=weekEnding&&(!c.end_date||c.end_date>=weekEnding)&&['Active','Renewed'].includes(String(c.status||'')));
+ if(matches.length!==1)throw Error(matches.length?'Multiple applicable contracts found. Resolve the overlap in Contracts & Renewals.':'No applicable active contract found for this reporting week.');
+ const c=matches[0];if(!Number.isFinite(Number(c.hourly_pay))||Number(c.hourly_pay)<0)throw Error('Contract hourly rate is invalid.');
+ return c;
+}
+async function saveHours(e){
+ e.preventDefault();e.stopImmediatePropagation();
+ if(!leader()||!client()){notify('Sign in as an authorized Manager or Supervisor to save weekly hours.',true);return;}
+ const form=e.currentTarget,btn=form.querySelector('[type=submit]');if(btn)btn.disabled=true;
+ try{
+  const v=Object.fromEntries(new FormData(form).entries()),id=Number(v.owner),hours=Number(v.hours),weekEnd=ending(v.week);
+  if(!Number.isSafeInteger(id)||id<=0)throw Error('Select an evaluator.');
+  if(!String(v.hours||'').trim()||!Number.isFinite(hours)||hours<0||hours>168)throw Error('Hours must be between 0 and 168.');
+  if(!['Submitted','Reviewed','Needs clarification'].includes(v.status))throw Error('Choose a valid review status.');
+  const {data:member,error:memberError}=await client().from('team_members').select('id,role').eq('id',id).maybeSingle();
+  if(memberError)throw memberError;if(String(member?.role)!=='evaluator')throw Error('Only evaluator hours can be recorded.');
+  const c=await contractFor(id,weekEnd);
+  const payload={evaluator_id:id,week_ending:weekEnd,hours_worked:hours,hourly_rate:Number(c.hourly_pay),notes:String(v.activity||'').trim(),review_status:v.status};
+  const {error}=await client().from('weekly_hours_costs').upsert(payload,{onConflict:'evaluator_id,week_ending'});
+  if(error)throw error;
+  closeModal();await load(true);notify('Weekly hours saved to Supabase.');
+ }catch(err){notify('Weekly hours not saved: '+err.message,true);}finally{if(btn)btn.disabled=false;}
+}
+// The base page attaches an inline handler; capture prevents any local-only save.
+const form=document.getElementById('recordform');if(form)form.addEventListener('submit',function(e){if(page==='workHours')saveHours(e);},true);
+const priorDelete=deleteRecord;
+deleteRecord=async function(id){
+ if(page!=='workHours')return priorDelete(id);
+ if(!leader()){notify('Only authenticated leadership can delete weekly hours.',true);return;}
+ if(!confirm('Delete this weekly hours record from Supabase?'))return;
+ const {data:deleted,error}=await client().from('weekly_hours_costs').delete().eq('id',id).select('id');
+ if(error){notify('Weekly hours not deleted: '+error.message,true);return;}
+ if(!deleted?.length){notify('No record deleted. Check your permissions.',true);return;}
+ await load(true);
+};
+const priorSetPage=setPage;
+setPage=function(name){priorSetPage.apply(this,arguments);if(name==='workHours'&&leader())load(true);};
+const priorUnlock=unlock;
+unlock=function(){priorUnlock.apply(this,arguments);loadedFor='';if(leader())load(true);};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&leader()&&page==='workHours')load(true);});
+setInterval(()=>{if(leader()&&(loadedFor!==profile.supabaseUserId||page==='workHours'&&Date.now()-lastLoaded>30000))load(true);},5000);
+window.hubRefreshWeeklyHours=()=>load(true);
 })();
 </script>
 </body></html>
